@@ -119,3 +119,20 @@ morse(as, [.,-,.,.,.]).		% AS (wait A Second)
 morse(ct, [-,.,-,.,-]).		% CT (starting signal, Copy This)
 morse(sk, [.,.,.,-,.,-]).	% SK (end of work, Silent Key)
 morse(sn, [.,.,.,-,.]).		% SN (understood, Sho' 'Nuff)
+
+% Convert signal to message
+morse_message([], []). % Empty morse
+morse_message(Morse, [Letter]):- morse(Letter, Morse). % Singleton
+morse_message(Morse, Word):- % Convert morse code to character
+	append(MorseLetter_Head, [^|MorseLetter_Tail], Morse),
+	morse_message(MorseLetter_Head, Letter),
+	morse_message(MorseLetter_Tail, Letters),
+	append(Letter, Letters, Word).
+morse_message(Morse, Message):- % Convert morse code to message
+	append(MorseWord_Head, [#|MorseWord_Tail], Morse),
+	morse_message(MorseWord_Head, Word),
+	morse_message(MorseWord_Tail, Words),
+	append(Word, [#|Words], Message).
+
+signal_message(Signal, Message):- % Convert signals to morse code then to message
+	signal_morse(Signal, Morse), morse_message(Morse, Message).
