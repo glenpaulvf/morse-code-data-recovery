@@ -134,5 +134,39 @@ morse_message(Morse, Message):- % Convert morse code to message
 	morse_message(MorseWord_Tail, Words),
 	append(Word, [#|Words], Message).
 
-signal_message(Signal, Message):- % Convert signals to morse code then to message
-	signal_morse(Signal, Morse), morse_message(Morse, Message).
+% Correct errors in message
+correct_message([], Proper):- % Empty message
+	Proper = [].
+correct_message(Improper, Proper):- % Starting with error
+	append([error|_], ImproperTail, Improper),
+	correct_message(ImproperTail, ProperTail),
+	append([error|_], ProperTail, Proper).
+correct_message(Improper, Proper):- % Starting with #, error
+	append([#,error], ImproperTail, Improper),
+	correct_message(ImproperTail, ProperTail),
+	append([#,error], ProperTail, Proper).
+correct_message(Improper, Proper):- % Starting with # and contains error
+	Improper = [#|_],
+	member(error, Improper),
+	append(Head, [_, error|ImproperTail], Improper),
+	append(ProperHead, [#|_], Head),
+	correct_message(ImproperTail, ProperTail),
+	append(ProperHead, [#|ProperTail], Proper).
+correct_message(Improper, Proper):- % Starting with # and does not contain error
+	append([#], ImproperTail, Improper),
+	correct_message(ImproperTail, ProperTail),
+	append([#], ProperTail, Proper).
+correct_message(Improper, Proper):- % Iterate
+	append(ProperHead, ImproperTail, Improper),
+	(ImproperTail = [#|_]; ImproperTail = [error|_]),
+	correct_message(ImproperTail, ProperTail),
+	append(ProperHead, ProperTail, Proper).
+correct_message(Improper, Proper):- % Message containing only characters
+	Proper = Improper.
+
+% Convert signals to morse code then to message
+signal_message(Signal, Message):-
+	signal_morse(Signal, Morse),
+	morse_message(Morse, Interpretation),
+	correct_message(Interpretation, Message).
+
