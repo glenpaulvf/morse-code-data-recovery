@@ -29,35 +29,35 @@ delimiter([#], Signal) :- signal(Signal, #).
 
 % Convert signals to morse code.
 signal_morse([], []). % Empty signal
-signal_morse(S, [M]):- signal(S, M). % Singleton
-signal_morse(S, [M]):- % Convert symbol (dih/dah)
-	append(Symbol, Symbol_Delimiter, S),
+signal_morse(Signal, [Morse]):- signal(Signal, Morse). % Singleton
+signal_morse(Signal, [Morse]):- % Convert symbol (dih/dah)
+	append(Symbol, Symbol_Delimiter, Signal),
 	signal(Symbol_Delimiter, 0),
-	signal(Symbol, M).
-signal_morse(S, [M]):- % Convert letter
-	append(Letter, Letter_Delimiter, S),
+	signal(Symbol, Morse).
+signal_morse(Signal, [Morse]):- % Convert letter
+	append(Letter, Letter_Delimiter, Signal),
 	signal(Letter_Delimiter, ^),
-	signal(Letter, M).
-signal_morse(S, [M]):- % Convert word
-	append(Word, Word_Delimiter, S),
+	signal(Letter, Morse).
+signal_morse(Signal, [Morse]):- % Convert word
+	append(Word, Word_Delimiter, Signal),
 	signal(Word_Delimiter, #),
-	signal(Word, M).
-signal_morse(S, M):-
+	signal(Word, Morse).
+signal_morse(Signals, Morse):-
 	% Get prefixes and suffixes
-	append(S_Head, S_Tail, S),
+	append(SignalsHead, SignalsTail, Signals),
 	% Get first signal but not a symbol delimiter
-	signal(S_Head, Code), \+signal([0], Code),
+	signal(SignalsHead, Code), \+signal([0], Code),
 	% Get signal based on delimiter, default is symbol delimiter
 	delimiter(Delimiter, Signal),
 	% Get next symbol (starts with 1) and not delimiter (starts with 0)
 	% If fail, then continue to process current signal
-	append(Signal, [Signal_Head|Signal_Tail], S_Tail), Signal_Head = 1,
+	append(Signal, [SignalHead|SignalTail], SignalsTail), SignalHead = 1,
 	% Append morse code with delimiter
-	append([Code], Delimiter, Morse_Head),
+	append([Code], Delimiter, MorseHead),
 	% Convert the rest of the signal
-	signal_morse([Signal_Head|Signal_Tail], Morse_Tail),
+	signal_morse([SignalHead|SignalTail], MorseTail),
 	% Append code together
-	append(Morse_Head, Morse_Tail, M).
+	append(MorseHead, MorseTail, Morse).
 
 % Morse code table.
 morse(a, [.,-]).			% A
